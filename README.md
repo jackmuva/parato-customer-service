@@ -8,7 +8,7 @@ The custom code for this tutorial can be found in:
 - `app/api/permissions`: POST endpoint and custom logic for receiving and processing permissions data
 - `app/api/salesforce-upload`: POST endpoint to receive Salesforce Objects
 - `app/api/route.ts`: the default chat API will now look for permissions from authenticated users
-- `app/api/chat/engine/agent.ts`: OpenAI Agent implementation with function tools
+- `app/api/chat/engine/agents/defaultAgent.ts`: OpenAI Agent implementation with function tools
 - `utility/request-utilities.ts`: Functions that send POST requests to Paragon endpoint triggers for Salesforce and Slack
 
 

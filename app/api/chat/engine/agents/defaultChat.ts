@@ -1,7 +1,7 @@
 import {ContextChatEngine, Settings, SimpleChatEngine} from "llamaindex";
-import { getDataSource } from "./index";
-import { nodeCitationProcessor } from "./nodePostprocessors";
-import { generateFilters } from "./queryFilter";
+import { getDataSource } from "../index";
+import { nodeCitationProcessor } from "../nodePostprocessors";
+import { generateFilters } from "../queryFilter";
 
 export async function createChatEngine(documentIds?: string[], params?: any) {
   const index = await getDataSource(params);

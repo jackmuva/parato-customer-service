@@ -12,8 +12,7 @@ import { createCallbackManager } from "./llamaindex/streaming/events";
 import { generateNextQuestions } from "./llamaindex/streaming/suggestion";
 import jwt from "jsonwebtoken";
 import {getPermittedDocuments} from "@/app/api/permissions";
-import {createChatEngine} from "@/app/api/chat/engine/chat";
-import {createAgent} from "@/app/api/chat/engine/agent";
+import {createAgent} from "@/app/api/chat/engine/agents/defaultAgent";
 
 initObservability();
 initSettings();

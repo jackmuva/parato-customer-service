@@ -7,7 +7,7 @@ import {
     sendSlack,
     signJwt
 } from "@/app/utility/request-utilities";
-import {getDataSource} from "@/app/api/chat/engine/index";
+import {getDataSource} from "@/app/api/chat/engine";
 import {generateFilters} from "@/app/api/chat/engine/queryFilter";
 
 export async function createAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
@@ -29,38 +29,6 @@ export async function createAgent(userId: string | (() => string), documentIds?:
                     },
                 },
                 required: ["transcript"],
-            },
-        }
-    );
-
-    const createNotionPage = FunctionTool.from(
-        async({ title, text }: { title: string; text: string; }) => {
-            console.log("Notion Page Title: " + title);
-            console.log("Page text: " + text. replace(/(\r\n|\n|\r)/gm," "));
-
-            const response = await createPageInNotion({title: title, text: text}, signJwt(userId));
-            if(response.status){
-                return "Notion page successfully created";
-            }
-            return "Notion page failed to be created";
-        },
-        {
-            name: "createNotionPage",
-            description: "Use this function to create a page in Notion. When users ask for text or document contents to " +
-                "be sent to Notion, use this function tool",
-            parameters: {
-                type: "object",
-                properties: {
-                    title: {
-                        type: "string",
-                        description: "Title of Notion Page",
-                    },
-                    text: {
-                        type: "string",
-                        description: "Text contents of the Notion page",
-                    },
-                },
-                required: ["title", "text"],
             },
         }
     );
@@ -119,94 +87,6 @@ export async function createAgent(userId: string | (() => string), documentIds?:
                     },
                 },
                 required: ["confirmation", "message"],
-            },
-        }
-    );
-
-    const draftSalesforceContact = FunctionTool.from(
-        ({ first_name, last_name, email, title }: { first_name: string, last_name: string, email: string, title: string}) => {
-            console.log("Saleforce Contact Draft:");
-            console.log("Salesforce Contact first name: " + first_name);
-            console.log("Salesforce Contact last name: " + last_name);
-            console.log("Salesforce Contact email: " + email);
-            console.log("Salesforce Contact title: " + title);
-            return "Salesforce Contact first name: " + first_name + "\n" +
-                "Salesforce Contact last name: " + last_name + "\n" +
-                "Salesforce Contact email: " + email+ "\n" +
-                "Salesforce Contact title: " + title;
-        },
-        {
-            name: "draftSalesforceContact",
-            description: "Use this function to draft a contact record in Salesforce. This is a required function step" +
-                "before creating a contact record in Salesforce. Prompt confirmation from " +
-                "user to trigger the Salesforce Contact record confirm and send step. This function does not create the Contact record" +
-                "in Salesforce. This function only drafts a Contact record and prompts for confirmation",
-            parameters: {
-                type: "object",
-                properties: {
-                    first_name: {
-                        type: "string",
-                        description: "First name of Salesforce contact",
-                    },
-                    last_name: {
-                        type: "string",
-                        description: "Last name of Salesforce contact",
-                    },
-                    email: {
-                        type: "string",
-                        description: "Email of Salesforce contact",
-                    },
-                    title: {
-                        type: "string",
-                        description: "Title of Salesforce contact",
-                    },
-                },
-                required: ["first_name", "last_name", "email", "title"],
-            },
-        }
-    );
-
-    const confirmAndCreateSalesforceContact = FunctionTool.from(
-        async({ confirmation, first_name, last_name, email, title }: { confirmation: string, first_name: string, last_name: string,
-            email: string, title: string}) => {
-            console.log("Confirmed Salesforce Contact Creation: " + confirmation);
-            const response = await createSalesforceContact({first_name, last_name, email, title}, signJwt(userId));
-            console.log(response);
-            if(response.status === '200'){
-                return "Successfully created Salesforce Contact";
-            }
-            return response.error;
-        },
-        {
-            name: "confirmAndCreateSalesforceContact",
-            description: "Use this function to create a Salesforce Contact record only after a draft has been created. Do" +
-                "not use this function if an affirmative confirmation is not given. Do not use this function if" +
-                "a draft Salesforce Contact record has not been created",
-            parameters: {
-                type: "object",
-                properties: {
-                    confirmation: {
-                        type: "string",
-                        description: "affirmative confirmation to create Salesforce Contact record"
-                    },
-                    first_name: {
-                        type: "string",
-                        description: "First name of Salesforce contact",
-                    },
-                    last_name: {
-                        type: "string",
-                        description: "Last name of Salesforce contact",
-                    },
-                    email: {
-                        type: "string",
-                        description: "Email of Salesforce contact",
-                    },
-                    title: {
-                        type: "string",
-                        description: "Title of Salesforce contact",
-                    },
-                },
-                required: ["confirmation", "first_name", "last_name", "email", "title"],
             },
         }
     );
@@ -424,169 +304,12 @@ export async function createAgent(userId: string | (() => string), documentIds?:
         }
     );
 
-
-    const getSdrSchedule = FunctionTool.from(
-      async ({ dummy }: {dummy: string}) => {
-          console.log("Getting SDR Calendar");
-        const response = await getGoogleCalendarAvailability(signJwt(userId));
-        console.log(response);
-        if (response.busy) {
-          return response.busy;
-        }
-        return "Calendar could not be pulled";
-      },
-      {
-        name: "getSdrSchedule",
-        description: "Use this function when a user asks to schedule a meeting with the SDR. This function returns when " +
-            "the SDR is busy and UNABLE to meet." +
-            "Times are provided in UTC format. Use the convertUtcDatetimeToPstDatetime tool to convert UTC datetimes to" +
-            "PST before returning results.",
-        parameters: {
-          type: "object",
-          properties: {
-            dummy: {
-              type: "string",
-              description: "dummy",
-            },
-          },
-          required: [],
-        },
-      },
-    );
-
-    const convertUtcDatetimeToPstDatetime = FunctionTool.from(
-        ({datetime}: {datetime: string}) => {
-            console.log("Converting UTC time");
-            console.log(new Date(new Date(datetime).toString()));
-            return JSON.stringify({pstDatetime: new Date(datetime).toString()});
-        },
-        {
-            name: "convertUtcDatetimeToPstDatetime",
-            description:
-                "Use this function to convert UTC datetimes to PST. Use this function whenever UTC datetimes are given such as" +
-                " after the getSdrSchedule function tool is used.",
-            parameters: {
-                type: "object",
-                properties: {
-                    datetime: {
-                        type: "string",
-                        description: "datetime in UTC",
-                    },
-                },
-                required: ["datetime"],
-            },
-        },
-    );
-
-    const createMeeting = FunctionTool.from(
-        async ({ datetime, email }: {datetime: string, email: string}) => {
-            console.log("Creating Calendar Event");
-            console.log("Time: " + datetime);
-            console.log("attendee email: " + email);
-            const response = await createGoogleCalendarEvent({event_name: "SDR Intro Call", attendees: email, start_time: datetime}, signJwt(userId));
-            console.log(response);
-            if (response.status) {
-                return "Meeting created successfully";
-            }
-            return "Meeting failed to be created";
-        },
-        {
-            name: "createMeeting",
-            description:
-                "Use this function to schedule a meeting with the user. Prompt user for their email so we know where to" +
-                "send the invite to. Meetings will be one hour.",
-            parameters: {
-                type: "object",
-                properties: {
-                    datetime: {
-                        type: "string",
-                        description: "datetime of meeting in west coast time (pacific time)",
-                    },
-                    email: {
-                        type: "string",
-                        description: "The email of the attendee",
-                    },
-                },
-                required: ["datetime", "email"],
-            },
-        },
-    );
-
-    const sendSlackMeetingNotification = FunctionTool.from(
-        async ({ datetime, email }: {datetime: string, email: string}) => {
-            console.log("Slack Meeting Notification");
-            console.log("Time: " + datetime);
-            console.log("attendee email: " + email);
-            const message = "Meeting scheduled for " + new Date(datetime).toString() + " with " + email;
-            const response = await sendSlack(message, signJwt(userId));
-            console.log(response);
-            if (response.status) {
-                return "Slack meeting notification created successfully";
-            }
-            return "Slack meeting notification failed to be created";
-        },
-        {
-            name: "sendSlackMeetingNotification",
-            description:
-                "Use this function after a meeting has been created with the createMeeting tool. Create a Salesforce Task " +
-                "using the createSalesforceTask if not done yet.",
-            parameters: {
-                type: "object",
-                properties: {
-                    datetime: {
-                        type: "string",
-                        description: "datetime of meeting",
-                    },
-                    email: {
-                        type: "string",
-                        description: "The email of the attendee",
-                    },
-                },
-                required: ["datetime", "email"],
-            },
-        },
-    );
-
-    const createSalesforceTask = FunctionTool.from(
-        async ({ datetime, email }: {datetime: string, email: string}) => {
-            console.log("Salesforce Task");
-            console.log("Time: " + datetime);
-            console.log("attendee email: " + email);
-            const response = await attachSalesforceTask({email: email, meeting_time: new Date(datetime).toISOString().split('T')[0]}, signJwt(userId));
-            console.log(response);
-            if (response.status) {
-                return "Salesforce Task created successfully";
-            }
-            return "Salesforce Task failed to be created";
-        },
-        {
-            name: "createSalesforceTask",
-            description:
-                "Use this function after a meeting has been created with the createMeeting tool to create a " +
-                "Salesforce Task when a meeting has been scheduled with the SDR",
-            parameters: {
-                type: "object",
-                properties: {
-                    datetime: {
-                        type: "string",
-                        description: "datetime of meeting",
-                    },
-                    email: {
-                        type: "string",
-                        description: "The email of the attendee",
-                    },
-                },
-                required: ["datetime", "email"],
-            },
-        },
-    );
-
     const index = await getDataSource(params);
     const permissionFilters = generateFilters(documentIds || []);
     const queryEngine = index.asQueryEngine({
-            similarityTopK: process.env.TOP_K ? parseInt(process.env.TOP_K) : 3,
-            preFilters: permissionFilters,
-        });
+        similarityTopK: process.env.TOP_K ? parseInt(process.env.TOP_K) : 3,
+        preFilters: permissionFilters,
+    });
 
     const queryEngineTool = new QueryEngineTool({
         queryEngine: queryEngine,
@@ -599,12 +322,8 @@ export async function createAgent(userId: string | (() => string), documentIds?:
     return new OpenAIAgent({
         tools: [summarizeTranscript,
             draftSlackMessage, confirmAndSendSlackMessage,
-            draftSalesforceContact, confirmAndCreateSalesforceContact,
             draftSalesforceOpportunity, confirmAndCreateSalesforceOpportunity,
             draftAsanaTask, confirmAndCreateAsanaTask, getAsanaMemberId,
-            getSdrSchedule, convertUtcDatetimeToPstDatetime,
-            createMeeting, sendSlackMeetingNotification, createSalesforceTask,
-            createNotionPage,
             queryEngineTool]
     });
 }
