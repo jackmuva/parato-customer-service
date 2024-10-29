@@ -97,7 +97,7 @@ export async function createCustomerServiceAgent(userId: string | (() => string)
     const queryEngineTool = new QueryEngineTool({
         queryEngine: queryEngine,
         metadata: {
-            description: "Look up user queries for relevant information",
+            description: "Provides information on Paragon specific topics and issues",
             name: "queryEngineTool"
         }
     });
