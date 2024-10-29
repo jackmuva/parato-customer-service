@@ -1,16 +1,13 @@
 import {FunctionTool, OpenAIAgent, QueryEngineTool} from "llamaindex";
 import {
-    attachSalesforceTask,
-    createAsanaTask, createGoogleCalendarEvent, createPageInNotion,
-    createSalesforceContact,
-    createSalesforceOpportunity, getAsanaTeam, getGoogleCalendarAvailability,
+    attachSalesforceTask, createGoogleCalendarEvent,  getGoogleCalendarAvailability,
     sendSlack,
     signJwt
 } from "@/app/utility/request-utilities";
 import {getDataSource} from "@/app/api/chat/engine";
 import {generateFilters} from "@/app/api/chat/engine/queryFilter";
 
-export async function createAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
+export async function createSdrAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
     const getSdrSchedule = FunctionTool.from(
         async ({ dummy }: {dummy: string}) => {
             console.log("Getting SDR Calendar");

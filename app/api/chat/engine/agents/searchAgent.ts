@@ -1,16 +1,12 @@
 import {FunctionTool, OpenAIAgent, QueryEngineTool} from "llamaindex";
 import {
-    attachSalesforceTask,
-    createAsanaTask, createGoogleCalendarEvent, createPageInNotion,
-    createSalesforceContact,
-    createSalesforceOpportunity, getAsanaTeam, getGoogleCalendarAvailability,
-    sendSlack,
+    createPageInNotion,
     signJwt
 } from "@/app/utility/request-utilities";
 import {getDataSource} from "@/app/api/chat/engine";
 import {generateFilters} from "@/app/api/chat/engine/queryFilter";
 
-export async function createAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
+export async function createSearchAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
 
     const createNotionPage = FunctionTool.from(
         async({ title, text }: { title: string; text: string; }) => {

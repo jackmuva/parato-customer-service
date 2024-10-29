@@ -148,3 +148,33 @@ export async function createPageInNotion(page: {title: string, text: string}, jw
             console.log("Error creating Notion page: " + error)
         );
 }
+
+export async function createTicketInIntercom(ticket: {issue: string, email: string, title: string}, jwt: string) {
+    return await fetch(process.env.CREATE_INTERCOM_TICKET ?? "", {
+        method: "POST",
+        body: JSON.stringify(ticket),
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "bearer " + jwt,
+        },
+    })
+        .then((response) => response.json())
+        .catch((error) =>
+            console.log("Error creating Intercom Ticket: " + error)
+        );
+}
+
+export async function createAccountTaskInSalesforce(task: {account: string, transcript: string, subject: string}, jwt: string) {
+    return await fetch(process.env.CREATE_SALESFORCE_ACCOUNT_TASK ?? "", {
+        method: "POST",
+        body: JSON.stringify(task),
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "bearer " + jwt,
+        },
+    })
+        .then((response) => response.json())
+        .catch((error) =>
+            console.log("Error creating Salesforce Account Task: " + error)
+        );
+}

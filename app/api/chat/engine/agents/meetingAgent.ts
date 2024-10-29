@@ -1,16 +1,14 @@
 import {FunctionTool, OpenAIAgent, QueryEngineTool} from "llamaindex";
 import {
-    attachSalesforceTask,
-    createAsanaTask, createGoogleCalendarEvent, createPageInNotion,
-    createSalesforceContact,
-    createSalesforceOpportunity, getAsanaTeam, getGoogleCalendarAvailability,
+    createAsanaTask,
+    createSalesforceOpportunity, getAsanaTeam,
     sendSlack,
     signJwt
 } from "@/app/utility/request-utilities";
 import {getDataSource} from "@/app/api/chat/engine";
 import {generateFilters} from "@/app/api/chat/engine/queryFilter";
 
-export async function createAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
+export async function createMeetingAgent(userId: string | (() => string), documentIds?: string[], params?: any): Promise<OpenAIAgent>{
     const summarizeTranscript = FunctionTool.from(
         ({ transcript}: { transcript: string; }) => {
             return "Transcript: " + transcript;
