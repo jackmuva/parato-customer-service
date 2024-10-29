@@ -12,7 +12,8 @@ import { createCallbackManager } from "./llamaindex/streaming/events";
 import { generateNextQuestions } from "./llamaindex/streaming/suggestion";
 import jwt from "jsonwebtoken";
 import {getPermittedDocuments} from "@/app/api/permissions";
-import {createAgent} from "@/app/api/chat/engine/agents/defaultAgent";
+import {createAgent} from "@/app/api/chat/engine/agents/customerServiceAgent";
+import {createChatEngine} from "@/app/api/chat/engine/agents/defaultChat";
 
 initObservability();
 initSettings();
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
       console.log("Permitted Documents");
       console.log(ids);
       chatEngine = await createAgent(user, ids, data);
+      // chatEngine = await createChatEngine(ids, data);
     } else{
       chatEngine = new SimpleChatEngine({
         llm:Settings.llm,
